@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Saviynt IAM Clone - Access Governance</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Space+Grotesk:wght@400;500;600&display=swap"
+			rel="stylesheet"
+		/>
+		<style>
+			:root {
+				--ink: #0b1220;
+				--night: #0f1b2d;
+				--cloud: #eef3f8;
+				--sun: #e86a2d;
+				--sea: #0a7aa3;
+				--rose: #e8455f;
+				--sky: #89c9f6;
+				--paper: #f6f8fb;
+				--stroke: rgba(15, 27, 45, 0.12);
+				--glass: rgba(255, 255, 255, 0.78);
+				--shadow: 0 18px 40px rgba(10, 16, 32, 0.16);
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			body {
+				margin: 0;
+				font-family: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+				color: var(--ink);
+				background: radial-gradient(circle at top left, #f0f7ff, #f6f8fb 45%, #eef2f9 100%);
+				min-height: 100vh;
+			}
+
+			body.nav-open {
+				overflow: hidden;
+			}
+
+			.backdrop {
+				position: fixed;
+				inset: 0;
+				pointer-events: none;
+				overflow: hidden;
+			}
+
+			.orb {
+				position: absolute;
+				border-radius: 999px;
+				filter: blur(0);
+				opacity: 0.45;
+			}
+
+			.orb.one {
+				width: 340px;
+				height: 340px;
+				background: radial-gradient(circle, #cde7ff, transparent 70%);
+				top: -60px;
+				left: -80px;
+				animation: drift 14s ease-in-out infinite;
+			}
+
+			.orb.two {
+				width: 280px;
+				height: 280px;
+				background: radial-gradient(circle, #dff2ff, transparent 65%);
+				bottom: -80px;
+				right: -60px;
+				animation: drift 16s ease-in-out infinite reverse;
+			}
+
+			.orb.three {
+				width: 220px;
+				height: 220px;
+				background: radial-gradient(circle, #ffe1d5, transparent 70%);
+				top: 20%;
+				right: 18%;
+				animation: float 12s ease-in-out infinite;
+			}
+
+			@keyframes drift {
+				0%,
+				100% {
+					transform: translateY(0) translateX(0);
+				}
+				50% {
+					transform: translateY(20px) translateX(18px);
+				}
+			}
+
+			@keyframes float {
+				0%,
+				100% {
+					transform: translateY(0);
+				}
+				50% {
+					transform: translateY(-18px);
+				}
+			}
+
+			header {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 28px 8vw 12px;
+				position: relative;
+				z-index: 5;
+			}
+
+			.header-left {
+				display: flex;
+				align-items: center;
+				gap: 14px;
+			}
+
+			.burger {
+				width: 44px;
+				height: 44px;
+				border-radius: 14px;
+				border: 1px solid var(--stroke);
+				background: rgba(255, 255, 255, 0.8);
+				display: grid;
+				place-items: center;
+				cursor: pointer;
+				box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
+			}
+
+			.burger span {
+				width: 18px;
+				height: 2px;
+				background: var(--night);
+				display: block;
+				position: relative;
+			}
+
+			.burger span::before,
+			.burger span::after {
+				content: "";
+				position: absolute;
+				left: 0;
+				width: 18px;
+				height: 2px;
+				background: var(--night);
+			}
+
+			.burger span::before {
+				top: -6px;
+			}
+
+			.burger span::after {
+				top: 6px;
+			}
+
+			.side-nav {
+				position: fixed;
+				top: 0;
+				left: 0;
+				height: 100vh;
+				width: 280px;
+				background: rgba(15, 27, 45, 0.96);
+				color: #fff;
+				padding: 28px 22px;
+				transform: translateX(-100%);
+				transition: transform 0.3s ease;
+				z-index: 10;
+			}
+
+			.side-nav h2 {
+				margin: 0 0 24px;
+				font-family: "Fraunces", "Times New Roman", serif;
+				font-size: 1.5rem;
+			}
+
+			.side-nav a {
+				display: block;
+				padding: 12px 14px;
+				margin-bottom: 10px;
+				border-radius: 12px;
+				color: #fff;
+				text-decoration: none;
+				background: rgba(255, 255, 255, 0.06);
+				transition: background 0.2s ease, transform 0.2s ease;
+			}
+
+			.side-nav a:hover {
+				background: rgba(255, 255, 255, 0.12);
+				transform: translateX(4px);
+			}
+
+			.side-nav .org-pill {
+				margin-top: 20px;
+				padding: 12px 14px;
+				border-radius: 12px;
+				background: rgba(255, 255, 255, 0.12);
+				font-size: 0.9rem;
+			}
+
+			.nav-overlay {
+				position: fixed;
+				inset: 0;
+				background: rgba(6, 12, 24, 0.45);
+				opacity: 0;
+				pointer-events: none;
+				transition: opacity 0.3s ease;
+				z-index: 9;
+			}
+
+			body.nav-open .side-nav {
+				transform: translateX(0);
+			}
+
+			body.nav-open .nav-overlay {
+				opacity: 1;
+				pointer-events: auto;
+			}
+
+			.brand {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+			}
+
+			.brand-badge {
+				width: 48px;
+				height: 48px;
+				border-radius: 16px;
+				background: linear-gradient(140deg, var(--sea), #185bb4);
+				display: grid;
+				place-items: center;
+				color: #fff;
+				font-weight: 600;
+				box-shadow: var(--shadow);
+			}
+
+			.brand h1 {
+				margin: 0;
+				font-family: "Fraunces", "Times New Roman", serif;
+				font-size: 1.6rem;
+			}
+
+			.tagline {
+				font-size: 0.95rem;
+				color: rgba(11, 18, 32, 0.7);
+			}
+
+			.nav-actions {
+				display: flex;
+				gap: 12px;
+			}
+
+			.pill {
+				border: 1px solid var(--stroke);
+				background: rgba(255, 255, 255, 0.7);
+				padding: 10px 16px;
+				border-radius: 999px;
+				font-size: 0.9rem;
+				box-shadow: 0 8px 18px rgba(0, 0, 0, 0.05);
+			}
+
+			main {
+				padding: 10px 8vw 60px;
+				display: grid;
+				gap: 28px;
+			}
+
+			.hero {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+				gap: 20px;
+				align-items: center;
+			}
+
+			.hero-card {
+				background: var(--glass);
+				border: 1px solid var(--stroke);
+				padding: 26px;
+				border-radius: 24px;
+				box-shadow: var(--shadow);
+				backdrop-filter: blur(12px);
+				animation: rise 0.9s ease both;
+			}
+
+			@keyframes rise {
+				from {
+					opacity: 0;
+					transform: translateY(24px);
+				}
+				to {
+					opacity: 1;
+					transform: translateY(0);
+				}
+			}
+
+			.hero h2 {
+				margin: 0 0 12px;
+				font-family: "Fraunces", "Times New Roman", serif;
+				font-size: 2.2rem;
+			}
+
+			.hero p {
+				margin: 0 0 18px;
+				line-height: 1.6;
+				color: rgba(11, 18, 32, 0.75);
+			}
+
+			.cta {
+				display: inline-flex;
+				align-items: center;
+				gap: 10px;
+				border: none;
+				background: linear-gradient(135deg, var(--sea), #185bb4);
+				color: #fff;
+				font-weight: 600;
+				padding: 12px 20px;
+				border-radius: 14px;
+				cursor: pointer;
+				box-shadow: 0 12px 24px rgba(24, 115, 211, 0.25);
+				transition: transform 0.2s ease, box-shadow 0.2s ease;
+			}
+
+			.cta:hover {
+				transform: translateY(-2px);
+				box-shadow: 0 18px 32px rgba(24, 115, 211, 0.28);
+			}
+
+			.cta:focus-visible {
+				outline: 3px solid rgba(24, 115, 211, 0.35);
+				outline-offset: 2px;
+			}
+
+			.summary-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+				gap: 16px;
+			}
+
+			.summary-card {
+				background: var(--paper);
+				border: 1px solid var(--stroke);
+				padding: 18px;
+				border-radius: 18px;
+				display: grid;
+				gap: 8px;
+				box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+				animation: rise 1s ease both;
+			}
+
+			.summary-card strong {
+				font-size: 1.4rem;
+			}
+
+			.summary-meta {
+				font-size: 0.9rem;
+				color: rgba(11, 18, 32, 0.65);
+			}
+
+			.dashboard {
+				display: grid;
+				grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+				gap: 20px;
+			}
+
+			.panel {
+				background: var(--glass);
+				border: 1px solid var(--stroke);
+				border-radius: 20px;
+				padding: 20px;
+				box-shadow: var(--shadow);
+				backdrop-filter: blur(14px);
+			}
+
+			.panel h3 {
+				margin: 0 0 14px;
+				font-family: "Fraunces", "Times New Roman", serif;
+				font-size: 1.25rem;
+			}
+
+			.pulse-card {
+				display: grid;
+				gap: 12px;
+			}
+
+			.pulse-item {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 12px 14px;
+				border-radius: 14px;
+				border: 1px dashed rgba(11, 18, 32, 0.2);
+				background: rgba(255, 255, 255, 0.7);
+			}
+
+			.pulse-item span {
+				font-size: 0.9rem;
+				color: rgba(11, 18, 32, 0.7);
+			}
+
+			.risk-dot {
+				width: 12px;
+				height: 12px;
+				border-radius: 50%;
+				background: var(--rose);
+				box-shadow: 0 0 0 6px rgba(239, 71, 111, 0.18);
+			}
+
+			.risk-dot.low {
+				background: var(--sea);
+				box-shadow: 0 0 0 6px rgba(42, 157, 143, 0.18);
+			}
+
+			.risk-dot.mid {
+				background: var(--sun);
+				box-shadow: 0 0 0 6px rgba(246, 160, 77, 0.18);
+			}
+
+			.users-panel {
+				display: grid;
+				gap: 14px;
+			}
+
+			.user-row {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 12px 14px;
+				border-radius: 14px;
+				border: 1px solid rgba(11, 18, 32, 0.12);
+				background: rgba(255, 255, 255, 0.8);
+			}
+
+			.user-row button {
+				border: none;
+				background: var(--ink);
+				color: #fff;
+				padding: 8px 12px;
+				border-radius: 12px;
+				cursor: pointer;
+				font-size: 0.85rem;
+			}
+
+			.user-row button:hover {
+				opacity: 0.9;
+			}
+
+			.drawer {
+				display: none;
+				margin-top: 12px;
+				padding: 18px;
+				border-radius: 16px;
+				background: #fff;
+				border: 1px solid var(--stroke);
+				box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+				animation: rise 0.5s ease both;
+			}
+
+			.drawer.active {
+				display: grid;
+				gap: 10px;
+			}
+
+			.drawer h4 {
+				margin: 0;
+				font-family: "Fraunces", "Times New Roman", serif;
+			}
+
+			.detail-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+				gap: 12px;
+			}
+
+			.detail-card {
+				padding: 12px;
+				border-radius: 12px;
+				background: #f2f6fb;
+				border: 1px solid rgba(11, 18, 32, 0.08);
+			}
+
+			.detail-card span {
+				display: block;
+				font-size: 0.8rem;
+				color: rgba(11, 18, 32, 0.6);
+			}
+
+			.table {
+				width: 100%;
+				border-collapse: collapse;
+				margin-top: 12px;
+			}
+
+			.table th,
+			.table td {
+				text-align: left;
+				padding: 12px 10px;
+				font-size: 0.9rem;
+			}
+
+			.table th {
+				color: rgba(11, 18, 32, 0.6);
+				font-weight: 500;
+			}
+
+			.table tr + tr {
+				border-top: 1px solid rgba(11, 18, 32, 0.08);
+			}
+
+			.badge {
+				padding: 4px 10px;
+				border-radius: 999px;
+				font-size: 0.75rem;
+				background: rgba(42, 157, 143, 0.18);
+				color: #186e64;
+			}
+
+			.badge.warn {
+				background: rgba(246, 160, 77, 0.2);
+				color: #a55a14;
+			}
+
+			.badge.high {
+				background: rgba(239, 71, 111, 0.2);
+				color: #a02344;
+			}
+
+			@media (max-width: 960px) {
+				.dashboard {
+					grid-template-columns: 1fr;
+				}
+				header {
+					flex-direction: column;
+					align-items: flex-start;
+					gap: 16px;
+				}
+				.nav-actions {
+					flex-wrap: wrap;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<nav class="side-nav" aria-label="Primary">
+			<h2>Access Console</h2>
+			<a href="main.html">Dashboard</a>
+			<a href="users.html">Users</a>
+			<a href="#">Access Requests</a>
+			<a href="#">Policies</a>
+			<a href="#">Audit Trails</a>
+			<div class="org-pill">Org: TCS march 23rd CSP</div>
+		</nav>
+		<div class="nav-overlay" id="nav-overlay" aria-hidden="true"></div>
+
+		<div class="backdrop" aria-hidden="true">
+			<div class="orb one"></div>
+			<div class="orb two"></div>
+			<div class="orb three"></div>
+		</div>
+
+		<header>
+			<div class="header-left">
+				<button class="burger" id="nav-toggle" aria-label="Open navigation" type="button">
+					<span></span>
+				</button>
+				<div class="brand">
+					<div class="brand-badge">SV</div>
+					<div>
+						<h1>Saviynt IAM</h1>
+						<div class="tagline">Identity governance for TCS march 23rd CSP</div>
+					</div>
+				</div>
+			</div>
+			<div class="nav-actions">
+				<div class="pill">Org: TCS march 23rd CSP</div>
+				<div class="pill">Last sync: 2 minutes ago</div>
+				<div class="pill">Policy version 3.9</div>
+			</div>
+		</header>
+
+		<main>
+			<section class="hero">
+				<div class="hero-card">
+					<h2>Identity governance with clarity.</h2>
+					<p>
+						Unified access governance for TCS march 23rd CSP. Track privileged
+						roles, approval flows, and risk signals from one secure hub.
+					</p>
+					<button class="cta" id="toggle-users">
+						View users
+						<span aria-hidden="true">→</span>
+					</button>
+				</div>
+				<div class="summary-grid">
+					<div class="summary-card">
+						<strong>2,418</strong>
+						<div class="summary-meta">Active identities</div>
+					</div>
+					<div class="summary-card">
+						<strong>96%</strong>
+						<div class="summary-meta">Access reviews complete</div>
+					</div>
+					<div class="summary-card">
+						<strong>12</strong>
+						<div class="summary-meta">High-risk sessions</div>
+					</div>
+					<div class="summary-card">
+						<strong>43</strong>
+						<div class="summary-meta">Policy exceptions</div>
+					</div>
+				</div>
+			</section>
+
+			<section class="dashboard">
+				<div class="panel">
+					<h3>Access pulse</h3>
+					<table class="table" aria-label="Access pulse">
+						<thead>
+							<tr>
+								<th>User</th>
+								<th>Role</th>
+								<th>Risk</th>
+								<th>Last activity</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>Aarav Sharma</td>
+								<td>Cloud Operations</td>
+								<td><span class="badge">Low</span></td>
+								<td>2 mins ago</td>
+							</tr>
+							<tr>
+								<td>Ananya Iyer</td>
+								<td>Data Platform</td>
+								<td><span class="badge warn">Elevated</span></td>
+								<td>10 mins ago</td>
+							</tr>
+							<tr>
+								<td>Rohan Mehta</td>
+								<td>Security Engineering</td>
+								<td><span class="badge high">High</span></td>
+								<td>19 mins ago</td>
+							</tr>
+							<tr>
+								<td>Kavya Nair</td>
+								<td>Finance Admin</td>
+								<td><span class="badge">Low</span></td>
+								<td>28 mins ago</td>
+							</tr>
+							<tr>
+								<td>Arjun Rao</td>
+								<td>Network Security</td>
+								<td><span class="badge warn">Elevated</span></td>
+								<td>35 mins ago</td>
+							</tr>
+							<tr>
+								<td>Meera Kulkarni</td>
+								<td>IAM Compliance</td>
+								<td><span class="badge">Low</span></td>
+								<td>41 mins ago</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+				<div class="panel">
+					<h3>Risk ledger</h3>
+					<div class="pulse-card">
+						<div class="pulse-item">
+							<div>
+								<strong>Privileged escalations</strong>
+								<span>12 triggered in 24h</span>
+							</div>
+							<div class="risk-dot mid"></div>
+						</div>
+						<div class="pulse-item">
+							<div>
+								<strong>Suspicious logins</strong>
+								<span>4 flagged by UEBA</span>
+							</div>
+							<div class="risk-dot"></div>
+						</div>
+						<div class="pulse-item">
+							<div>
+								<strong>Policy drift</strong>
+								<span>2 open deviations</span>
+							</div>
+							<div class="risk-dot low"></div>
+						</div>
+					</div>
+
+					<div class="drawer" id="users-drawer" aria-live="polite">
+						<h4>User directory</h4>
+						<div class="users-panel" id="users-panel"></div>
+					</div>
+				</div>
+			</section>
+		</main>
+
+		<script>
+			const users = [
+				{
+					name: "Aarav Sharma",
+					role: "Cloud Operations",
+					status: "Active",
+					region: "India",
+					lastLogin: "2 minutes ago",
+					permissions: "Cloud admin, Infra audit",
+					openTickets: 1,
+				},
+				{
+					name: "Ananya Iyer",
+					role: "Data Platform",
+					status: "On-call",
+					region: "India",
+					lastLogin: "10 minutes ago",
+					permissions: "Data lake, ETL runner",
+					openTickets: 3,
+				},
+				{
+					name: "Rohan Mehta",
+					role: "Security Engineering",
+					status: "Investigating",
+					region: "India",
+					lastLogin: "19 minutes ago",
+					permissions: "Incident response, SIEM",
+					openTickets: 2,
+				},
+				{
+					name: "Kavya Nair",
+					role: "Finance Admin",
+					status: "Active",
+					region: "India",
+					lastLogin: "28 minutes ago",
+					permissions: "Billing, Compliance",
+					openTickets: 0,
+				},
+				{
+					name: "Arjun Rao",
+					role: "Network Security",
+					status: "Active",
+					region: "India",
+					lastLogin: "35 minutes ago",
+					permissions: "Firewall admin, VPN access",
+					openTickets: 1,
+				},
+				{
+					name: "Meera Kulkarni",
+					role: "IAM Compliance",
+					status: "Reviewing",
+					region: "India",
+					lastLogin: "41 minutes ago",
+					permissions: "Policy review, Audit logs",
+					openTickets: 2,
+				},
+				{
+					name: "Vikram Singh",
+					role: "App Support",
+					status: "Active",
+					region: "India",
+					lastLogin: "50 minutes ago",
+					permissions: "Service desk, App resets",
+					openTickets: 4,
+				},
+				{
+					name: "Sneha Reddy",
+					role: "HR Systems",
+					status: "Active",
+					region: "India",
+					lastLogin: "1 hour ago",
+					permissions: "HRIS admin, Joiner mover leaver",
+					openTickets: 0,
+				},
+			];
+
+			const usersPanel = document.getElementById("users-panel");
+			const drawer = document.getElementById("users-drawer");
+			const toggleUsers = document.getElementById("toggle-users");
+			const navToggle = document.getElementById("nav-toggle");
+			const navOverlay = document.getElementById("nav-overlay");
+
+			const renderUsers = () => {
+				usersPanel.innerHTML = "";
+				users.forEach((user) => {
+					const row = document.createElement("div");
+					row.className = "user-row";
+					row.innerHTML = `
+						<div>
+							<strong>${user.name}</strong><br />
+							<span>${user.role}</span>
+						</div>
+						<button type="button">View details</button>
+					`;
+
+					const details = document.createElement("div");
+					details.className = "drawer";
+					details.innerHTML = `
+						<h4>${user.name}</h4>
+						<div class="detail-grid">
+							<div class="detail-card">
+								<span>Status</span>
+								<strong>${user.status}</strong>
+							</div>
+							<div class="detail-card">
+								<span>Region</span>
+								<strong>${user.region}</strong>
+							</div>
+							<div class="detail-card">
+								<span>Last login</span>
+								<strong>${user.lastLogin}</strong>
+							</div>
+							<div class="detail-card">
+								<span>Permissions</span>
+								<strong>${user.permissions}</strong>
+							</div>
+							<div class="detail-card">
+								<span>Open tickets</span>
+								<strong>${user.openTickets}</strong>
+							</div>
+						</div>
+					`;
+
+					const button = row.querySelector("button");
+					button.addEventListener("click", () => {
+						const isActive = details.classList.contains("active");
+						document
+							.querySelectorAll("#users-panel .drawer")
+							.forEach((panel) => panel.classList.remove("active"));
+						if (!isActive) {
+							details.classList.add("active");
+						}
+					});
+
+					usersPanel.appendChild(row);
+					usersPanel.appendChild(details);
+				});
+			};
+
+			toggleUsers.addEventListener("click", () => {
+				drawer.classList.toggle("active");
+				if (drawer.classList.contains("active")) {
+					renderUsers();
+					drawer.scrollIntoView({ behavior: "smooth", block: "center" });
+				}
+			});
+
+			const toggleNav = (forceOpen) => {
+				document.body.classList.toggle("nav-open", forceOpen);
+			};
+
+			navToggle.addEventListener("click", () => {
+				const isOpen = document.body.classList.contains("nav-open");
+				toggleNav(!isOpen);
+			});
+
+			navOverlay.addEventListener("click", () => {
+				toggleNav(false);
+			});
+		</script>
+	</body>
+</html>

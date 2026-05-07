@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Saviynt IAM - Users</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Space+Grotesk:wght@400;500;600&display=swap"
+			rel="stylesheet"
+		/>
+		<style>
+			:root {
+				--ink: #0b1220;
+				--night: #0f1b2d;
+				--sea: #0a7aa3;
+				--paper: #f6f8fb;
+				--stroke: rgba(15, 27, 45, 0.12);
+				--shadow: 0 18px 40px rgba(10, 16, 32, 0.16);
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			body {
+				margin: 0;
+				font-family: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+				color: var(--ink);
+				background: radial-gradient(circle at top left, #f0f7ff, #f6f8fb 45%, #eef2f9 100%);
+				min-height: 100vh;
+			}
+
+			header {
+				padding: 26px 8vw 10px;
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+			}
+
+			.brand {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+			}
+
+			.brand-badge {
+				width: 48px;
+				height: 48px;
+				border-radius: 16px;
+				background: linear-gradient(140deg, var(--sea), #185bb4);
+				display: grid;
+				place-items: center;
+				color: #fff;
+				font-weight: 600;
+				box-shadow: var(--shadow);
+			}
+
+			.brand h1 {
+				margin: 0;
+				font-family: "Fraunces", "Times New Roman", serif;
+				font-size: 1.5rem;
+			}
+
+			.tagline {
+				font-size: 0.95rem;
+				color: rgba(11, 18, 32, 0.7);
+			}
+
+			.back-link {
+				text-decoration: none;
+				color: #185bb4;
+				font-weight: 500;
+			}
+
+			main {
+				padding: 8px 8vw 60px;
+			}
+
+			.page-hero {
+				background: rgba(255, 255, 255, 0.8);
+				border: 1px solid var(--stroke);
+				border-radius: 22px;
+				padding: 22px;
+				box-shadow: var(--shadow);
+				margin-bottom: 22px;
+			}
+
+			.page-hero h2 {
+				margin: 0 0 8px;
+				font-family: "Fraunces", "Times New Roman", serif;
+				font-size: 2rem;
+			}
+
+			.page-hero p {
+				margin: 0;
+				color: rgba(11, 18, 32, 0.7);
+			}
+
+			.user-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+				gap: 16px;
+			}
+
+			.user-card {
+				background: var(--paper);
+				border: 1px solid var(--stroke);
+				border-radius: 18px;
+				padding: 18px;
+				box-shadow: 0 12px 26px rgba(15, 23, 42, 0.1);
+				display: grid;
+				gap: 10px;
+			}
+
+			.user-card button {
+				border: none;
+				background: var(--night);
+				color: #fff;
+				padding: 8px 12px;
+				border-radius: 12px;
+				cursor: pointer;
+				font-size: 0.85rem;
+			}
+
+			.drawer {
+				display: none;
+				margin-top: 8px;
+				padding: 12px;
+				border-radius: 14px;
+				background: #fff;
+				border: 1px solid var(--stroke);
+			}
+
+			.drawer.active {
+				display: grid;
+				gap: 6px;
+			}
+
+			.drawer span {
+				font-size: 0.85rem;
+				color: rgba(11, 18, 32, 0.7);
+			}
+		</style>
+	</head>
+	<body>
+		<header>
+			<div class="brand">
+				<div class="brand-badge">SV</div>
+				<div>
+					<h1>Saviynt IAM</h1>
+					<div class="tagline">Users for TCS march 23rd CSP</div>
+				</div>
+			</div>
+			<a class="back-link" href="main.html">Back to dashboard</a>
+		</header>
+
+		<main>
+			<section class="page-hero">
+				<h2>User directory</h2>
+				<p>Tap any user to reveal access details and open tickets.</p>
+			</section>
+
+			<section class="user-grid" id="user-grid"></section>
+		</main>
+
+		<script>
+			const users = [
+				{
+					name: "Aarav Sharma",
+					role: "Cloud Operations",
+					status: "Active",
+					lastLogin: "2 minutes ago",
+					permissions: "Cloud admin, Infra audit",
+					openTickets: 1,
+				},
+				{
+					name: "Ananya Iyer",
+					role: "Data Platform",
+					status: "On-call",
+					lastLogin: "10 minutes ago",
+					permissions: "Data lake, ETL runner",
+					openTickets: 3,
+				},
+				{
+					name: "Rohan Mehta",
+					role: "Security Engineering",
+					status: "Investigating",
+					lastLogin: "19 minutes ago",
+					permissions: "Incident response, SIEM",
+					openTickets: 2,
+				},
+				{
+					name: "Kavya Nair",
+					role: "Finance Admin",
+					status: "Active",
+					lastLogin: "28 minutes ago",
+					permissions: "Billing, Compliance",
+					openTickets: 0,
+				},
+				{
+					name: "Arjun Rao",
+					role: "Network Security",
+					status: "Active",
+					lastLogin: "35 minutes ago",
+					permissions: "Firewall admin, VPN access",
+					openTickets: 1,
+				},
+				{
+					name: "Meera Kulkarni",
+					role: "IAM Compliance",
+					status: "Reviewing",
+					lastLogin: "41 minutes ago",
+					permissions: "Policy review, Audit logs",
+					openTickets: 2,
+				},
+				{
+					name: "Vikram Singh",
+					role: "App Support",
+					status: "Active",
+					lastLogin: "50 minutes ago",
+					permissions: "Service desk, App resets",
+					openTickets: 4,
+				},
+				{
+					name: "Sneha Reddy",
+					role: "HR Systems",
+					status: "Active",
+					lastLogin: "1 hour ago",
+					permissions: "HRIS admin, Joiner mover leaver",
+					openTickets: 0,
+				},
+				{
+					name: "Nitin Joshi",
+					role: "Platform Reliability",
+					status: "Active",
+					lastLogin: "1 hour ago",
+					permissions: "SRE dashboard, Pager",
+					openTickets: 2,
+				},
+				{
+					name: "Pooja Bhat",
+					role: "Customer Identity",
+					status: "On-call",
+					lastLogin: "2 hours ago",
+					permissions: "CIAM policies, MFA",
+					openTickets: 1,
+				},
+			];
+
+			const grid = document.getElementById("user-grid");
+
+			users.forEach((user) => {
+				const card = document.createElement("div");
+				card.className = "user-card";
+				card.innerHTML = `
+					<div>
+						<strong>${user.name}</strong><br />
+						<span>${user.role}</span>
+					</div>
+					<button type="button">View details</button>
+				`;
+
+				const details = document.createElement("div");
+				details.className = "drawer";
+				details.innerHTML = `
+					<span>Status: <strong>${user.status}</strong></span>
+					<span>Last login: <strong>${user.lastLogin}</strong></span>
+					<span>Permissions: <strong>${user.permissions}</strong></span>
+					<span>Open tickets: <strong>${user.openTickets}</strong></span>
+				`;
+
+				card.querySelector("button").addEventListener("click", () => {
+					const isOpen = details.classList.contains("active");
+					document.querySelectorAll(".drawer").forEach((panel) => {
+						panel.classList.remove("active");
+					});
+					if (!isOpen) {
+						details.classList.add("active");
+					}
+				});
+
+				card.appendChild(details);
+				grid.appendChild(card);
+			});
+		</script>
+	</body>
+</html>
